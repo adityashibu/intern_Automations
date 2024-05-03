@@ -1,43 +1,43 @@
 import pytesseract
-import PyPDF2
 from PIL import Image
-import io
+import re
 
-def extract_text_from_pdf(pdf_path):
-    text = ""
-    with open(pdf_path, 'rb') as file:
-        reader = PyPDF2.PdfFileReader(file)
-        num_pages = reader.numPages
-        for page_num in range(num_pages):
-            page = reader.getPage(page_num)
-            # Convert each page to an image
-            img = page_to_image(page)
-            # Extract text from the image using Tesseract
-            page_text = pytesseract.image_to_string(img)
-            text += page_text + "\n\n"
+def extract_text_from_image(image_path):
+    # Use pytesseract to extract text from the image
+    text = pytesseract.image_to_string(Image.open(image_path))
     return text
 
-def page_to_image(page):
-    # Convert PDF page to an image
-    img = page.to_pil()
-    # Convert to RGB if image is not in RGB format
-    if img.mode != 'RGB':
-        img = img.convert('RGB')
-    return img
-
 def find_title(text):
-    # Implement your logic to find the title based on the extracted text
-    # For example, you might look for the first line that contains capitalized words
-    lines = text.split('\n')
-    for line in lines:
-        if line.strip().isupper():  # Assuming titles are in all caps
-            return line.strip()
-    # If no suitable title found, return a default title
-    return "Untitled Document"
+    # Initialize variables to store information
+    title = "Untitled Document"
+    name = ""
+    amount = ""
+
+    # Check if "Dear" is mentioned in the text
+    if "Dear" in text:
+        # Extract the name following "Dear"
+        name_match = re.search(r'Dear\s+([\w\s]+)', text)
+        if name_match:
+            name = name_match.group(1).strip()
+
+    # Check if "AED" is mentioned in the text
+    if "AED" in text:
+        # Extract the amount following "AED"
+        amount_match = re.search(r'AED\s+([\d.]+)', text)
+        if amount_match:
+            amount = amount_match.group(1).strip()
+
+    # Construct the title
+    if name and amount:
+        title = f"{name} Bank receipt AED {amount}"
+    elif name:
+        title = f"{name} Bank receipt"
+
+    return title
 
 # Example usage:
-pdf_path = '/path/to/your/pdf/document.pdf'
-text = extract_text_from_pdf(pdf_path)
+image_path = r"D:\Screenshot 2024-05-03 123820.jpg"
+text = extract_text_from_image(image_path)
 title = find_title(text)
 print("Title:", title)
 print("Extracted Text:", text)
