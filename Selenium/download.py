@@ -8,7 +8,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from bs4 import BeautifulSoup
 
-class DownloadHandler(FileSystemEventHandler):
+class DownloadHandler(FileSystemEventHandler):  
     def __init__(self, driver):
         super().__init__()
         self.driver = driver
@@ -65,15 +65,6 @@ profile.set_preference("browser.download.dir", download_dir)
 profile.set_preference("browser.download.useDownloadDir", True)
 profile.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream")
 
-# Check if cookies file exists, load cookies if it does
-cookies_file = "cookies.pkl"
-if os.path.exists(cookies_file):
-    with open(cookies_file, "rb") as f:
-        cookies = pickle.load(f)
-        profile.set_preference("network.cookie.cookieBehavior", 0)
-        for cookie in cookies:
-            profile.add_cookie(cookie)
-
 # Set up Firefox driver with the specified profile
 options = Options()
 options.profile = profile
@@ -81,14 +72,6 @@ driver = webdriver.Firefox(options=options)
 
 # Open WhatsApp Web
 driver.get("https://web.whatsapp.com")
-
-# Wait for user to scan QR code and login
-if not os.path.exists(cookies_file):
-    input("Press Enter after scanning QR code...")
-
-    # Save cookies for future sessions
-    with open(cookies_file, "wb") as f:
-        pickle.dump(driver.get_cookies(), f)
 
 # Set up file system observer
 event_handler = DownloadHandler(driver)
