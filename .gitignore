@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Token files
+DiscordBots/token.py
+
 # Distribution / packaging
 .Python
 build/
